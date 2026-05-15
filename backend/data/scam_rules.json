@@ -1,0 +1,32 @@
+{
+    "suspicious_accounts": [
+        "1234567890",
+        "9876543210",
+        "5555555555",
+        "1111222233",
+        "4444555566"
+    ],
+    "amount_threshold": 500,
+    "frequency": {
+        "max_transactions": 3,
+        "time_window_minutes": 10
+    },
+    "suspicious_keywords": [
+        "lottery",
+        "prize",
+        "winner",
+        "urgent",
+        "investment",
+        "verify",
+        "account update",
+        "security alert",
+        "inheritance",
+        "gov",
+        "refund",
+        "tax"
+    ],
+    "response": {
+        "timeout_seconds": 10,
+        "fallback_number": "997"
+    }
+}

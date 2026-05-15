@@ -1,0 +1,35 @@
+[
+  {
+    "id": "1778858680212",
+    "userId": "user1",
+    "recipient_account": "1111",
+    "amount": 50,
+    "remark": "scam",
+    "status": "ESCALATED",
+    "decision": "WARN",
+    "ai_reason": "AI service temporarily unavailable. Transaction held for review.",
+    "timestamp": "2026-05-15T15:24:40.212Z"
+  },
+  {
+    "id": "1778859733154",
+    "userId": "user1",
+    "recipient_account": "1111",
+    "amount": 340000,
+    "remark": "",
+    "status": "ESCALATED",
+    "decision": "WARN",
+    "ai_reason": "AI service temporarily unavailable. Transaction held for review.",
+    "timestamp": "2026-05-15T15:42:13.154Z"
+  },
+  {
+    "id": "1778859874046",
+    "userId": "user1",
+    "recipient_account": "1111",
+    "amount": 4444,
+    "remark": "scam",
+    "status": "ESCALATED",
+    "decision": "WARN",
+    "ai_reason": "Remark contains suspicious keyword: scam",
+    "timestamp": "2026-05-15T15:44:34.046Z"
+  }
+]

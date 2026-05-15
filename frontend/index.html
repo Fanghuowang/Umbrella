@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScamShield AI - Safe Banking for Seniors</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛡️ ScamShield AI</h1>
+            <p>Secure Banking for Elderly Customers</p>
+        </header>
+
+        <!-- Login Section -->
+        <div id="loginSection" class="card">
+            <h2>Welcome</h2>
+            <select id="userSelect">
+                <option value="user1">Ahmad Abdullah (Age 68)</option>
+            </select>
+            <button id="loginBtn" class="btn-primary">Login to Bank</button>
+        </div>
+
+        <!-- Main Banking Section (hidden until login) -->
+        <div id="bankingSection" style="display: none;">
+            <div class="balance-card">
+                <h3>Current Balance</h3>
+                <div class="balance-amount" id="balance">RM 10,000.00</div>
+            </div>
+
+            <div class="transfer-card card">
+                <h3>Make a Transfer</h3>
+                <form id="transferForm">
+                    <div class="form-group">
+                        <label>Recipient Account Number</label>
+                        <input type="text" id="recipientAccount" placeholder="e.g., 1234567890" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount (RM)</label>
+                        <input type="number" id="amount" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Remark (optional)</label>
+                        <input type="text" id="remark" placeholder="e.g., groceries, payment">
+                    </div>
+                    <button type="submit" id="transferBtn" class="btn-success">Check & Transfer</button>
+                </form>
+            </div>
+
+            <!-- AI Decision Display -->
+            <div id="aiDecision" class="decision-card" style="display: none;">
+                <div id="decisionMessage"></div>
+                <div id="simulatedSMS" class="sms-simulation"></div>
+                <div id="approvalButtons" style="display: none;">
+                    <button id="approveBtn" class="btn-approve">✅ Approve (as Trusted Person)</button>
+                    <button id="rejectBtn" class="btn-reject">❌ Reject (as Trusted Person)</button>
+                </div>
+                <div id="call997Section" style="display: none;">
+                    <button id="call997Btn" class="btn-997">📞 Call 997 (NSRC)</button>
+                </div>
+            </div>
+
+            <!-- Transaction History -->
+            <div class="history-card card">
+                <h3>Recent Transactions</h3>
+                <ul id="transactionHistory">
+                    <li>No transactions yet</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
