@@ -38,7 +38,6 @@ function deductBalance(userId, amount) {
     return { success: true, newBalance: users[userIndex].balance };
 }
 
-// Initiate transfer
 router.post('/initiate', async (req, res) => {
     const { userId, recipient_account, amount, remark } = req.body;
 
@@ -56,7 +55,6 @@ router.post('/initiate', async (req, res) => {
         return res.status(400).json({ success: false, error: 'Insufficient balance', balance: currentUser.balance });
     }
 
-    // Frequency check: number of transfers to the SAME account in last 60 minutes
     const frequencyCount = getTransactionCount(userId, recipient_account, 60);
     const systemPrompt = loadSystemPrompt();
     const transactionData = { recipient_account, amount: amountNum, remark: remarkTrimmed, frequencyCount };
@@ -64,10 +62,8 @@ router.post('/initiate', async (req, res) => {
     try {
         const aiDecision = await callAIDetection(transactionData, systemPrompt);
         console.log('AI Decision:', aiDecision);
-        // Record this attempt for frequency tracking
         addTransaction(userId, recipient_account);
 
-        // BLOCK – immediate block without approval
         if (aiDecision.decision === 'BLOCK') {
             const transactionId = Date.now().toString();
             const blockedTransaction = {
@@ -92,7 +88,6 @@ router.post('/initiate', async (req, res) => {
                 message: `Transaction blocked: ${aiDecision.reason}`
             });
         }
-        // ALLOW – deduct balance and complete
         else if (aiDecision.decision === 'ALLOW') {
             const deduction = deductBalance(userId, amountNum);
             if (!deduction.success) return res.status(400).json({ success: false, error: deduction.error });
@@ -117,7 +112,6 @@ router.post('/initiate', async (req, res) => {
                 message: 'Transaction completed successfully'
             });
         }
-        // WARN – hold for trusted person approval
         else {
             const transactions = readTransactions();
             const transactionId = Date.now().toString();
@@ -135,7 +129,6 @@ router.post('/initiate', async (req, res) => {
             transactions.push(pendingTransaction);
             writeTransactions(transactions);
 
-            // Timeout for escalation to 997: 20 seconds
             const timeout = setTimeout(() => {
                 const allTx = readTransactions();
                 const tx = allTx.find(t => t.id === transactionId);
@@ -145,7 +138,7 @@ router.post('/initiate', async (req, res) => {
                     console.log(`Transaction ${transactionId} escalated to 997 after 20 seconds`);
                 }
                 delete pendingTimeouts[transactionId];
-            }, 20000); // 20 seconds
+            }, 20000);
             pendingTimeouts[transactionId] = timeout;
 
             return res.json({
@@ -163,7 +156,6 @@ router.post('/initiate', async (req, res) => {
     }
 });
 
-// Approve transaction (trusted person)
 router.post('/approve/:transactionId', (req, res) => {
     const { transactionId } = req.params;
     const transactions = readTransactions();
@@ -179,7 +171,6 @@ router.post('/approve/:transactionId', (req, res) => {
     res.json({ success: true, newBalance: deduct.newBalance, message: 'Transaction approved' });
 });
 
-// Reject transaction (trusted person)
 router.post('/reject/:transactionId', (req, res) => {
     const { transactionId } = req.params;
     const transactions = readTransactions();
@@ -191,7 +182,6 @@ router.post('/reject/:transactionId', (req, res) => {
     res.json({ success: true, message: 'Transaction rejected' });
 });
 
-// NSRC decision (for escalated transactions)
 router.post('/nsrc/:transactionId', (req, res) => {
     const { transactionId } = req.params;
     const { decision } = req.body;
@@ -212,7 +202,6 @@ router.post('/nsrc/:transactionId', (req, res) => {
     res.json({ success: true, message: `NSRC ${decision}d transaction` });
 });
 
-// Get transaction status (for polling)
 router.get('/status/:transactionId', (req, res) => {
     const { transactionId } = req.params;
     const transactions = readTransactions();
@@ -221,7 +210,6 @@ router.get('/status/:transactionId', (req, res) => {
     res.json({ status: tx.status, decision: tx.decision, reason: tx.ai_reason });
 });
 
-// Get user balance
 router.get('/balance/:userId', (req, res) => {
     const users = readUsers();
     const user = users.find(u => u.id === req.params.userId);
@@ -229,7 +217,6 @@ router.get('/balance/:userId', (req, res) => {
     res.json({ userId: user.id, name: user.name, balance: user.balance, trusted_person: user.trusted_person });
 });
 
-// Get full transaction details (for trusted person page)
 router.get('/details/:transactionId', (req, res) => {
     const { transactionId } = req.params;
     const transactions = readTransactions();

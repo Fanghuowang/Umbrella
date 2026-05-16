@@ -1,5 +1,4 @@
-// In-memory storage: Map key = `${userId}:${recipientAccount}`
-const userRecipientTransactions = new Map(); // key -> array of timestamps
+const userRecipientTransactions = new Map();
 
 function addTransaction(userId, recipientAccount) {
     const key = `${userId}:${recipientAccount}`;
@@ -9,7 +8,6 @@ function addTransaction(userId, recipientAccount) {
     const timestamps = userRecipientTransactions.get(key);
     timestamps.push(Date.now());
 
-    // Clean entries older than 60 minutes (3600000 ms)
     const oneHourAgo = Date.now() - 60 * 60 * 1000;
     const filtered = timestamps.filter(ts => ts > oneHourAgo);
     userRecipientTransactions.set(key, filtered);

@@ -7,7 +7,6 @@ const openai = new OpenAI({
 });
 
 function cleanAIResponse(content) {
-    // Remove markdown code blocks (```json ... ``` or ``` ... ```)
     let cleaned = content.replace(/```json\s*/g, '');
     cleaned = cleaned.replace(/```\s*/g, '');
     cleaned = cleaned.trim();
@@ -55,7 +54,6 @@ async function callAIDetection(transactionData, systemPrompt) {
             console.error('Status:', error.response.status);
             console.error('Data:', JSON.stringify(error.response.data, null, 2));
         }
-        // Fallback response so demo still works
         return {
             decision: 'WARN',
             reason: 'AI service temporarily unavailable. Transaction held for review.',

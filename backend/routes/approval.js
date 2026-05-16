@@ -24,7 +24,6 @@ function writeUsers(data) {
     fs.writeFileSync(USERS_FILE, JSON.stringify(data, null, 2));
 }
 
-// Approve transaction
 router.post('/approve/:transactionId', (req, res) => {
     const { transactionId } = req.params;
     const transactions = readTransactions();
@@ -38,7 +37,6 @@ router.post('/approve/:transactionId', (req, res) => {
         return res.status(400).json({ error: `Cannot approve: transaction status is ${transaction.status}` });
     }
 
-    // For WARN transactions (not BLOCK), deduct balance on approval
     if (transaction.decision === 'WARN') {
         const users = readUsers();
         const userIndex = users.findIndex(u => u.id === transaction.userId);
@@ -63,7 +61,6 @@ router.post('/approve/:transactionId', (req, res) => {
     });
 });
 
-// Reject transaction
 router.post('/reject/:transactionId', (req, res) => {
     const { transactionId } = req.params;
     const transactions = readTransactions();

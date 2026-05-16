@@ -8,7 +8,6 @@ function loadSystemPrompt() {
         return prompt;
     } catch (error) {
         console.error('Error loading system prompt:', error);
-        // Return fallback prompt
         return `You are a bank security AI. Analyse transactions and return JSON with decision (ALLOW/WARN/BLOCK), reason, and notify_child.`;
     }
 }
