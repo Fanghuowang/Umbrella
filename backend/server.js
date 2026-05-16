@@ -25,5 +25,5 @@ app.get('/api/health', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`✅ ScamShield AI running on http://localhost:${PORT}`);
+    console.log(`✅ Umbrella running on http://localhost:${PORT}`);
 });

@@ -31,13 +31,10 @@ function writeUsers(data) {
 function deductBalance(userId, amount) {
     const users = readUsers();
     const userIndex = users.findIndex(u => u.id === userId);
-
     if (userIndex === -1) return { success: false, error: 'User not found' };
     if (users[userIndex].balance < amount) return { success: false, error: 'Insufficient balance' };
-
     users[userIndex].balance -= amount;
     writeUsers(users);
-
     return { success: true, newBalance: users[userIndex].balance };
 }
 
@@ -45,67 +42,60 @@ function deductBalance(userId, amount) {
 router.post('/initiate', async (req, res) => {
     const { userId, recipient_account, amount, remark } = req.body;
 
-    // ✅ REMARK IS NOW REQUIRED - validate it
-    if (!userId || !recipient_account || !amount) {
-        return res.status(400).json({ error: 'Missing required fields: userId, recipient_account, amount are required' });
-    }
-
-    if (!remark || remark.trim() === '') {
-        return res.status(400).json({ error: 'Remark is required. Please describe the purpose of this transfer' });
+    if (!userId || !recipient_account || !amount || !remark || remark.trim() === '') {
+        return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const amountNum = parseFloat(amount);
     const remarkTrimmed = remark.trim();
 
-    // Check balance first
     const users = readUsers();
     const currentUser = users.find(u => u.id === userId);
-    if (!currentUser) {
-        return res.status(404).json({ error: 'User not found' });
-    }
+    if (!currentUser) return res.status(404).json({ error: 'User not found' });
     if (currentUser.balance < amountNum) {
-        return res.status(400).json({
-            success: false,
-            error: 'Insufficient balance',
-            balance: currentUser.balance
-        });
+        return res.status(400).json({ success: false, error: 'Insufficient balance', balance: currentUser.balance });
     }
 
-    // Get frequency count
-    const frequencyCount = getTransactionCount(userId);
-
-    // Load system prompt
+    // Frequency check: number of transfers to the SAME account in last 60 minutes
+    const frequencyCount = getTransactionCount(userId, recipient_account, 60);
     const systemPrompt = loadSystemPrompt();
-
-    // Prepare transaction data for AI
-    const transactionData = {
-        recipient_account,
-        amount: amountNum,
-        remark: remarkTrimmed,
-        frequencyCount
-    };
+    const transactionData = { recipient_account, amount: amountNum, remark: remarkTrimmed, frequencyCount };
 
     try {
-        // Call AI for detection
         const aiDecision = await callAIDetection(transactionData, systemPrompt);
         console.log('AI Decision:', aiDecision);
+        // Record this attempt for frequency tracking
+        addTransaction(userId, recipient_account);
 
-        // Add to frequency tracker
-        addTransaction(userId);
-
-        if (aiDecision.decision === 'ALLOW') {
-            // Deduct balance
-            const deduction = deductBalance(userId, amountNum);
-
-            if (!deduction.success) {
-                return res.status(400).json({
-                    success: false,
-                    error: deduction.error
-                });
-            }
-
-            // Record successful transaction
+        // BLOCK – immediate block without approval
+        if (aiDecision.decision === 'BLOCK') {
+            const transactionId = Date.now().toString();
+            const blockedTransaction = {
+                id: transactionId,
+                userId,
+                recipient_account,
+                amount: amountNum,
+                remark: remarkTrimmed,
+                status: 'BLOCKED',
+                decision: aiDecision.decision,
+                ai_reason: aiDecision.reason,
+                timestamp: new Date().toISOString()
+            };
             const transactions = readTransactions();
+            transactions.push(blockedTransaction);
+            writeTransactions(transactions);
+            return res.json({
+                success: false,
+                decision: 'BLOCK',
+                reason: aiDecision.reason,
+                transactionId,
+                message: `Transaction blocked: ${aiDecision.reason}`
+            });
+        }
+        // ALLOW – deduct balance and complete
+        else if (aiDecision.decision === 'ALLOW') {
+            const deduction = deductBalance(userId, amountNum);
+            if (!deduction.success) return res.status(400).json({ success: false, error: deduction.error });
             const newTransaction = {
                 id: Date.now().toString(),
                 userId,
@@ -117,17 +107,18 @@ router.post('/initiate', async (req, res) => {
                 ai_reason: aiDecision.reason,
                 timestamp: new Date().toISOString()
             };
+            const transactions = readTransactions();
             transactions.push(newTransaction);
             writeTransactions(transactions);
-
             return res.json({
                 success: true,
                 decision: 'ALLOW',
                 newBalance: deduction.newBalance,
                 message: 'Transaction completed successfully'
             });
-        } else {
-            // BLOCK or WARN - create pending transaction
+        }
+        // WARN – hold for trusted person approval
+        else {
             const transactions = readTransactions();
             const transactionId = Date.now().toString();
             const pendingTransaction = {
@@ -144,28 +135,26 @@ router.post('/initiate', async (req, res) => {
             transactions.push(pendingTransaction);
             writeTransactions(transactions);
 
-            // Set timeout for 997 escalation
+            // Timeout for escalation to 997: 20 seconds
             const timeout = setTimeout(() => {
                 const allTx = readTransactions();
                 const tx = allTx.find(t => t.id === transactionId);
                 if (tx && tx.status === 'PENDING') {
                     tx.status = 'ESCALATED';
                     writeTransactions(allTx);
-                    console.log(`⏰ Transaction ${transactionId} escalated to 997`);
+                    console.log(`Transaction ${transactionId} escalated to 997 after 20 seconds`);
                 }
                 delete pendingTimeouts[transactionId];
-            }, 10000);
-
+            }, 20000); // 20 seconds
             pendingTimeouts[transactionId] = timeout;
 
             return res.json({
                 success: false,
-                decision: aiDecision.decision,
+                decision: 'WARN',
                 reason: aiDecision.reason,
-                notify_child: aiDecision.notify_child,
                 transactionId,
                 currentBalance: currentUser.balance,
-                message: `Transaction ${aiDecision.decision === 'BLOCK' ? 'blocked' : 'held for review'}: ${aiDecision.reason}`
+                message: `Transaction held: ${aiDecision.reason}`
             });
         }
     } catch (error) {
@@ -174,41 +163,79 @@ router.post('/initiate', async (req, res) => {
     }
 });
 
-// Get transaction status
+// Approve transaction (trusted person)
+router.post('/approve/:transactionId', (req, res) => {
+    const { transactionId } = req.params;
+    const transactions = readTransactions();
+    const tx = transactions.find(t => t.id === transactionId);
+    if (!tx) return res.status(404).json({ error: 'Transaction not found' });
+    if (tx.status !== 'PENDING') return res.status(400).json({ error: `Cannot approve: status ${tx.status}` });
+
+    const deduct = deductBalance(tx.userId, tx.amount);
+    if (!deduct.success) return res.status(400).json({ error: deduct.error });
+
+    tx.status = 'APPROVED';
+    writeTransactions(transactions);
+    res.json({ success: true, newBalance: deduct.newBalance, message: 'Transaction approved' });
+});
+
+// Reject transaction (trusted person)
+router.post('/reject/:transactionId', (req, res) => {
+    const { transactionId } = req.params;
+    const transactions = readTransactions();
+    const tx = transactions.find(t => t.id === transactionId);
+    if (!tx) return res.status(404).json({ error: 'Transaction not found' });
+    if (tx.status !== 'PENDING') return res.status(400).json({ error: `Cannot reject: status ${tx.status}` });
+    tx.status = 'REJECTED';
+    writeTransactions(transactions);
+    res.json({ success: true, message: 'Transaction rejected' });
+});
+
+// NSRC decision (for escalated transactions)
+router.post('/nsrc/:transactionId', (req, res) => {
+    const { transactionId } = req.params;
+    const { decision } = req.body;
+    const transactions = readTransactions();
+    const tx = transactions.find(t => t.id === transactionId);
+    if (!tx) return res.status(404).json({ error: 'Transaction not found' });
+    if (tx.status !== 'ESCALATED') return res.status(400).json({ error: `Cannot decide: status ${tx.status}` });
+    if (decision === 'approve') {
+        const deduct = deductBalance(tx.userId, tx.amount);
+        if (!deduct.success) return res.status(400).json({ error: deduct.error });
+        tx.status = 'APPROVED_BY_NSRC';
+    } else if (decision === 'reject') {
+        tx.status = 'REJECTED_BY_NSRC';
+    } else {
+        return res.status(400).json({ error: 'Invalid decision' });
+    }
+    writeTransactions(transactions);
+    res.json({ success: true, message: `NSRC ${decision}d transaction` });
+});
+
+// Get transaction status (for polling)
 router.get('/status/:transactionId', (req, res) => {
     const { transactionId } = req.params;
     const transactions = readTransactions();
-    const transaction = transactions.find(t => t.id === transactionId);
-
-    if (!transaction) {
-        return res.status(404).json({ error: 'Transaction not found' });
-    }
-
-    res.json({
-        status: transaction.status,
-        decision: transaction.decision,
-        reason: transaction.ai_reason,
-        amount: transaction.amount,
-        recipient_account: transaction.recipient_account
-    });
+    const tx = transactions.find(t => t.id === transactionId);
+    if (!tx) return res.status(404).json({ error: 'Not found' });
+    res.json({ status: tx.status, decision: tx.decision, reason: tx.ai_reason });
 });
 
 // Get user balance
 router.get('/balance/:userId', (req, res) => {
-    const { userId } = req.params;
     const users = readUsers();
-    const user = users.find(u => u.id === userId);
+    const user = users.find(u => u.id === req.params.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ userId: user.id, name: user.name, balance: user.balance, trusted_person: user.trusted_person });
+});
 
-    if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json({
-        userId: user.id,
-        name: user.name,
-        balance: user.balance,
-        trusted_person: user.trusted_person
-    });
+// Get full transaction details (for trusted person page)
+router.get('/details/:transactionId', (req, res) => {
+    const { transactionId } = req.params;
+    const transactions = readTransactions();
+    const tx = transactions.find(t => t.id === transactionId);
+    if (!tx) return res.status(404).json({ error: 'Transaction not found' });
+    res.json(tx);
 });
 
 module.exports = router;

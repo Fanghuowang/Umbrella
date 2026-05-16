@@ -1,28 +1,31 @@
-// In-memory storage for transaction timestamps
-const userTransactions = new Map(); // userId -> array of timestamps
+// In-memory storage: Map key = `${userId}:${recipientAccount}`
+const userRecipientTransactions = new Map(); // key -> array of timestamps
 
-function addTransaction(userId) {
-    if (!userTransactions.has(userId)) {
-        userTransactions.set(userId, []);
+function addTransaction(userId, recipientAccount) {
+    const key = `${userId}:${recipientAccount}`;
+    if (!userRecipientTransactions.has(key)) {
+        userRecipientTransactions.set(key, []);
     }
-    const timestamps = userTransactions.get(userId);
+    const timestamps = userRecipientTransactions.get(key);
     timestamps.push(Date.now());
 
-    // Clean old entries (older than 10 minutes)
-    const tenMinutesAgo = Date.now() - 10 * 60 * 1000;
-    const filtered = timestamps.filter(ts => ts > tenMinutesAgo);
-    userTransactions.set(userId, filtered);
+    // Clean entries older than 60 minutes (3600000 ms)
+    const oneHourAgo = Date.now() - 60 * 60 * 1000;
+    const filtered = timestamps.filter(ts => ts > oneHourAgo);
+    userRecipientTransactions.set(key, filtered);
 }
 
-function getTransactionCount(userId, minutes = 10) {
-    if (!userTransactions.has(userId)) return 0;
-    const timestamps = userTransactions.get(userId);
+function getTransactionCount(userId, recipientAccount, minutes = 60) {
+    const key = `${userId}:${recipientAccount}`;
+    if (!userRecipientTransactions.has(key)) return 0;
+    const timestamps = userRecipientTransactions.get(key);
     const cutoff = Date.now() - minutes * 60 * 1000;
     return timestamps.filter(ts => ts > cutoff).length;
 }
 
-function resetUserSession(userId) {
-    userTransactions.delete(userId);
+function resetUserSession(userId, recipientAccount) {
+    const key = `${userId}:${recipientAccount}`;
+    userRecipientTransactions.delete(key);
 }
 
 module.exports = { addTransaction, getTransactionCount, resetUserSession };
