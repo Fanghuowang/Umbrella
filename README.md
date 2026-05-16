@@ -1,4 +1,4 @@
-# ☂️ Umbrella
+## Umbrella
 
 ## AI-Powered Elderly Protection for Online Banking
 
@@ -8,7 +8,7 @@ If no response is received from the trusted person within **20 seconds**, the sy
 
 ---
 
-## 📌 Problem Statement
+## Problem Statement
 
 Elderly bank customers are frequently targeted by scams involving:
 - Mule accounts (flagged by PDRM SemakMule)
@@ -19,25 +19,25 @@ Existing bank fraud detection is **reactive** (after money is sent) and lacks **
 
 ---
 
-## ✨ Key Features
+## Key Features
 
 | Feature | Description |
 |---------|-------------|
-| 🤖 **AI Detection** | Uses NVIDIA Llama 3.3 70B via free API to analyse transactions |
-| 📋 **Suspicious Account Blacklist** | Blocks transfers to known mule accounts (from PDRM SemakMule) |
-| 💰 **Amount Alert** | Flags transactions > RM 500 |
-| ⏱️ **Frequency Check** | Alerts on ≥3 transfers to the same account within 1 hour |
-| 🔑 **Keyword Detection** | Scans remarks for scam‑related words (lottery, urgent, prize, etc.) |
-| 👨‍👩‍👧 **Family Approval** | Notifies trusted person in a separate tab with full details |
-| ⏰ **20‑Second Timeout** | If no response, automatically escalates to 997 |
-| 📞 **997 Call Simulation** | iPhone‑style incoming call interface with NSRC operator decision |
-| 🛡️ **Transaction Blocking** | Blocks suspicious transfers and notifies both elderly and trusted person |
-| 📜 **Transaction History** | Complete audit log with status (completed, approved, rejected, blocked) |
-| 📱 **Responsive Design** | Works on desktop and mobile, with a warm, calm, elderly‑friendly UI |
+| **AI Detection** | Uses NVIDIA Llama 3.3 70B via free API to analyse transactions |
+| **Suspicious Account Blacklist** | Blocks transfers to known mule accounts (from PDRM SemakMule) |
+| **Amount Alert** | Flags transactions > RM 500 |
+| **Frequency Check** | Alerts on ≥3 transfers to the same account within 1 hour |
+| **Keyword Detection** | Scans remarks for scam‑related words (lottery, urgent, prize, etc.) |
+| **Family Approval** | Notifies trusted person in a separate tab with full details |
+| **20‑Second Timeout** | If no response, automatically escalates to 997 |
+| **997 Call Simulation** | iPhone‑style incoming call interface with NSRC operator decision |
+| **Transaction Blocking** | Blocks suspicious transfers and notifies both elderly and trusted person |
+| **Transaction History** | Complete audit log with status (completed, approved, rejected, blocked) |
+| **Responsive Design** | Works on desktop and mobile, with a warm, calm, elderly‑friendly UI |
 
 ---
 
-## 🏗️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-------|------------|
@@ -82,16 +82,16 @@ Existing bank fraud detection is **reactive** (after money is sent) and lacks **
 ---
 
 ##  Demo Scenarios
-| 1 | **Safe transfer** – RM 50, remark "groceries", normal account | ✅ ALLOW – balance deducted, success modal |
-| 2 | **Suspicious account** – transfer to `512802774281` | 🚫 BLOCK – immediate block + notification |
-| 3 | **High amount** – RM 1000, normal account | ⚠️ WARN – trusted person tab opens, 20‑second countdown |
-| 4 | **Suspicious remark** – "lottery winner" | ⚠️ WARN – same approval flow |
-| 5 | **Frequency** – 4 transfers to same account in 1 hour | ⚠️ WARN on 4th attempt |
-| 6 | **Trusted person approves** | ✅ Transaction completes, balance deducted |
-| 7 | **Trusted person rejects** | ❌ Rejection modal with extra message to contact elderly |
-| 8 | **No response (20 seconds)** | ⏰ 997 call simulation opens in new tab – NSRC can approve/reject |
+| 1 | **Safe transfer** – RM 50, remark "groceries", normal account | ALLOW – balance deducted, success modal |
+| 2 | **Suspicious account** – transfer to `512802774281` | BLOCK – immediate block + notification |
+| 3 | **High amount** – RM 1000, normal account | WARN – trusted person tab opens, 20‑second countdown |
+| 4 | **Suspicious remark** – "lottery winner" | WARN – same approval flow |
+| 5 | **Frequency** – 4 transfers to same account in 1 hour | WARN on 4th attempt |
+| 6 | **Trusted person approves** | Transaction completes, balance deducted |
+| 7 | **Trusted person rejects** | Rejection modal with extra message to contact elderly |
+| 8 | **No response (20 seconds)** | 997 call simulation opens in new tab – NSRC can approve/reject |
 | 9 | **NSRC rejects** | Transaction blocked, elderly sees rejection reason |
-| 10 | **Insufficient balance** |  Error message |
+| 10 | **Insufficient balance** | Error message |
 
 ---
 
@@ -107,38 +107,4 @@ Umbrella sends the **system prompt** (from `backend/data/system_prompt.txt`) alo
 
 The AI returns a JSON object: `{"decision": "BLOCK/WARN/ALLOW", "reason": "...", "notify_child": true/false}`. The backend then executes the appropriate flow.
 
----
 
-## 👥 Team
-
-- **Project Director** – Nurin Emelin Binti Marhisyam
-- **Assistant Project Director** – Muhammad Aiman Bin Ahmad Hazimin
-- **Developers** – [Your Team Names]
-
----
-
-## 🙏 Acknowledgements
-
-- **NVIDIA** for free API access via NVIDIA NIM
-- **PDRM SemakMule** – inspiration for scam account database
-- **Bank Negara Malaysia** – Financial Consumer Alert List (suspicious domains)
-- **ElectroHack 2.0** – for the challenge and theme "SENSE-AI: Inclusion in Motion"
-
----
-
-## 📄 License
-
-MIT
-
----
-
-## 📬 Contact
-
-For any questions or feedback, please open an issue on GitHub or contact the project director at the email provided in the event documentation.
-
----
-
-**Built with ☂️ for a safer banking experience.**
-```
-
-This README is ready to be saved as `README.md` in your project root. It covers all the features, setup instructions, demo scenarios, and credits – perfect for the hackathon judges. 🚀
