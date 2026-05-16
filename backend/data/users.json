@@ -1,11 +1,11 @@
 [
-    {
-        "id": "user1",
-        "name": "Ahmad Abdullah",
-        "balance": 10000,
-        "trusted_person": {
-            "name": "Siti Ahmad",
-            "phone": "0123456789"
-        }
+  {
+    "id": "user1",
+    "name": "Ahmad Abdullah",
+    "balance": 9988,
+    "trusted_person": {
+      "name": "Siti Ahmad",
+      "phone": "0123456789"
     }
+  }
 ]

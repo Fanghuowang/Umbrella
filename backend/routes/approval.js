@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const TRANSACTIONS_FILE = path.join(__dirname, '../data/transactions.json');
+const USERS_FILE = path.join(__dirname, '../data/users.json');
 
 function readTransactions() {
     if (!fs.existsSync(TRANSACTIONS_FILE)) return [];
@@ -12,6 +13,15 @@ function readTransactions() {
 
 function writeTransactions(data) {
     fs.writeFileSync(TRANSACTIONS_FILE, JSON.stringify(data, null, 2));
+}
+
+function readUsers() {
+    if (!fs.existsSync(USERS_FILE)) return [];
+    return JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
+}
+
+function writeUsers(data) {
+    fs.writeFileSync(USERS_FILE, JSON.stringify(data, null, 2));
 }
 
 // Approve transaction
@@ -28,13 +38,28 @@ router.post('/approve/:transactionId', (req, res) => {
         return res.status(400).json({ error: `Cannot approve: transaction status is ${transaction.status}` });
     }
 
+    // For WARN transactions (not BLOCK), deduct balance on approval
+    if (transaction.decision === 'WARN') {
+        const users = readUsers();
+        const userIndex = users.findIndex(u => u.id === transaction.userId);
+
+        if (userIndex !== -1 && users[userIndex].balance >= transaction.amount) {
+            users[userIndex].balance -= transaction.amount;
+            writeUsers(users);
+            transaction.newBalance = users[userIndex].balance;
+        } else {
+            return res.status(400).json({ error: 'Insufficient balance for approval' });
+        }
+    }
+
     transaction.status = 'APPROVED';
     writeTransactions(transactions);
 
     res.json({
         success: true,
         message: 'Transaction approved successfully',
-        transactionId
+        transactionId,
+        newBalance: transaction.newBalance || null
     });
 });
 

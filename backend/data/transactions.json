@@ -31,5 +31,82 @@
     "decision": "WARN",
     "ai_reason": "Remark contains suspicious keyword: scam",
     "timestamp": "2026-05-15T15:44:34.046Z"
+  },
+  {
+    "id": "1778892480731",
+    "userId": "user1",
+    "recipient_account": "1111",
+    "amount": 22222,
+    "remark": "scam",
+    "status": "ESCALATED",
+    "decision": "WARN",
+    "ai_reason": "Amount exceeds RM 500",
+    "timestamp": "2026-05-16T00:48:00.731Z"
+  },
+  {
+    "id": "1778892537416",
+    "userId": "user1",
+    "recipient_account": "1111",
+    "amount": 22,
+    "remark": "",
+    "status": "COMPLETED",
+    "ai_reason": "Transaction appears safe",
+    "timestamp": "2026-05-16T00:48:57.416Z"
+  },
+  {
+    "id": "1778894223885",
+    "userId": "user1",
+    "recipient_account": "1111",
+    "amount": 12,
+    "remark": "scam",
+    "status": "APPROVED",
+    "decision": "WARN",
+    "ai_reason": "Remark contains suspicious keyword: scam",
+    "timestamp": "2026-05-16T01:17:03.885Z",
+    "newBalance": 9988
+  },
+  {
+    "id": "1778894505924",
+    "userId": "user1",
+    "recipient_account": "512802774281",
+    "amount": 12,
+    "remark": "",
+    "status": "REJECTED",
+    "decision": "BLOCK",
+    "ai_reason": "Recipient account is flagged as suspicious",
+    "timestamp": "2026-05-16T01:21:45.924Z"
+  },
+  {
+    "id": "1778894655836",
+    "userId": "user1",
+    "recipient_account": "1111",
+    "amount": 9988,
+    "remark": "moomoo",
+    "status": "ESCALATED",
+    "decision": "WARN",
+    "ai_reason": "Amount exceeds RM 500",
+    "timestamp": "2026-05-16T01:24:15.836Z"
+  },
+  {
+    "id": "1778895104069",
+    "userId": "user1",
+    "recipient_account": "1111",
+    "amount": 12,
+    "remark": "scam",
+    "status": "ESCALATED",
+    "decision": "WARN",
+    "ai_reason": "Remark contains suspicious keyword: scam",
+    "timestamp": "2026-05-16T01:31:44.069Z"
+  },
+  {
+    "id": "1778895456591",
+    "userId": "user1",
+    "recipient_account": "1111",
+    "amount": 12,
+    "remark": "scam",
+    "status": "ESCALATED",
+    "decision": "WARN",
+    "ai_reason": "Remark contains suspicious keyword: scam",
+    "timestamp": "2026-05-16T01:37:36.591Z"
   }
 ]
