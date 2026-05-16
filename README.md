@@ -4,7 +4,7 @@
 
 **Umbrella** is an intelligent security layer embedded inside a bank’s online banking web interface. It protects elderly customers from financial scams by analysing transactions in real time and involving a trusted family member when suspicious activity is detected.
 
-If no response is received from the trusted person within **20 seconds**, the system automatically escalates to the **National Scam Response Centre (997)** with a simulated iPhone‑style call interface, where an operator can approve or block the transaction.
+If no response is received from the trusted person within **10 minutes**, the system automatically escalates to the **National Scam Response Centre (997)** with a simulated iPhone‑style call interface, where an operator can approve or block the transaction.
 
 ---
 
