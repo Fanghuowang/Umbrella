@@ -1,10 +1,23 @@
 const OpenAI = require('openai');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 
 const openai = new OpenAI({
     apiKey: process.env.AI_API_KEY,
     baseURL: "https://integrate.api.nvidia.com/v1"
 });
+
+function loadSystemPrompt() {
+    const promptPath = path.join(__dirname, '../data/system_prompt.txt');
+    try {
+        const prompt = fs.readFileSync(promptPath, 'utf8');
+        return prompt;
+    } catch (error) {
+        console.error('Error loading system prompt:', error);
+        return `You are a bank security AI. Analyse transactions and return JSON with decision (ALLOW/WARN/BLOCK), reason, and notify_child.`;
+    }
+}
 
 function cleanAIResponse(content) {
     let cleaned = content.replace(/```json\s*/g, '');
@@ -13,7 +26,7 @@ function cleanAIResponse(content) {
     return cleaned;
 }
 
-async function callAIDetection(transactionData, systemPrompt) {
+async function callAIDetection(transactionData) {
     const userMessage = JSON.stringify({
         recipient_account: transactionData.recipient_account,
         amount: transactionData.amount,
@@ -21,7 +34,9 @@ async function callAIDetection(transactionData, systemPrompt) {
         transaction_count_last_10min: transactionData.frequencyCount
     });
 
-    console.log("📤 Sending to AI:", userMessage);
+    const systemPrompt = loadSystemPrompt();
+
+    console.log("Sending to AI:", userMessage);
 
     try {
         const response = await openai.chat.completions.create({
@@ -35,11 +50,10 @@ async function callAIDetection(transactionData, systemPrompt) {
         });
 
         let rawContent = response.choices[0].message.content;
-        console.log("📥 Raw AI Response:", rawContent);
+        console.log("Raw AI Response:", rawContent);
 
-        // Clean the response (remove markdown)
         const cleanedContent = cleanAIResponse(rawContent);
-        console.log("🧹 Cleaned Response:", cleanedContent);
+        console.log("Cleaned Response:", cleanedContent);
 
         const aiOutput = JSON.parse(cleanedContent);
 
@@ -49,7 +63,7 @@ async function callAIDetection(transactionData, systemPrompt) {
             notify_child: aiOutput.notify_child === true
         };
     } catch (error) {
-        console.error('❌ AI API error:', error.message);
+        console.error('AI API error:', error.message);
         if (error.response) {
             console.error('Status:', error.response.status);
             console.error('Data:', JSON.stringify(error.response.data, null, 2));

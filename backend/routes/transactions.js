@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const { callAIDetection } = require('../utils/aiClient');
 const { getTransactionCount, addTransaction } = require('../utils/sessionTracker');
-const { loadSystemPrompt } = require('../utils/scamRulesLoader');
 const fs = require('fs');
 const path = require('path');
 
@@ -56,11 +55,11 @@ router.post('/initiate', async (req, res) => {
     }
 
     const frequencyCount = getTransactionCount(userId, recipient_account, 60);
-    const systemPrompt = loadSystemPrompt();
+
     const transactionData = { recipient_account, amount: amountNum, remark: remarkTrimmed, frequencyCount };
 
     try {
-        const aiDecision = await callAIDetection(transactionData, systemPrompt);
+        const aiDecision = await callAIDetection(transactionData);
         console.log('AI Decision:', aiDecision);
         addTransaction(userId, recipient_account);
 

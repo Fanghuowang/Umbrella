@@ -21,9 +21,5 @@ function getTransactionCount(userId, recipientAccount, minutes = 60) {
     return timestamps.filter(ts => ts > cutoff).length;
 }
 
-function resetUserSession(userId, recipientAccount) {
-    const key = `${userId}:${recipientAccount}`;
-    userRecipientTransactions.delete(key);
-}
 
-module.exports = { addTransaction, getTransactionCount, resetUserSession };
+module.exports = { addTransaction, getTransactionCount };

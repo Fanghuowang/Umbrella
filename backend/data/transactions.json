@@ -561,5 +561,115 @@
     "decision": "WARN",
     "ai_reason": "Too many transfers to the same account in a short period",
     "timestamp": "2026-05-16T08:54:26.300Z"
+  },
+  {
+    "id": "1778926573161",
+    "userId": "user1",
+    "recipient_account": "25013903",
+    "amount": 100,
+    "remark": "Peanut",
+    "status": "COMPLETED",
+    "decision": "ALLOW",
+    "ai_reason": "Transaction appears safe",
+    "timestamp": "2026-05-16T10:16:13.161Z"
+  },
+  {
+    "id": "1778926688283",
+    "userId": "user1",
+    "recipient_account": "25013904",
+    "amount": 520,
+    "remark": "peanut",
+    "status": "REJECTED",
+    "decision": "WARN",
+    "ai_reason": "Amount exceeds RM 500",
+    "timestamp": "2026-05-16T10:18:08.283Z"
+  },
+  {
+    "id": "1778926765879",
+    "userId": "user1",
+    "recipient_account": "25013905",
+    "amount": 676,
+    "remark": "peanut",
+    "status": "REJECTED_BY_NSRC",
+    "decision": "WARN",
+    "ai_reason": "Amount exceeds RM 500",
+    "timestamp": "2026-05-16T10:19:25.879Z"
+  },
+  {
+    "id": "1778940564857",
+    "userId": "user1",
+    "recipient_account": "1111",
+    "amount": 50,
+    "remark": "peanut",
+    "status": "COMPLETED",
+    "decision": "ALLOW",
+    "ai_reason": "Transaction appears safe",
+    "timestamp": "2026-05-16T14:09:24.857Z"
+  },
+  {
+    "id": "1778940582961",
+    "userId": "user1",
+    "recipient_account": "1111",
+    "amount": 502,
+    "remark": "peanut",
+    "status": "REJECTED",
+    "decision": "WARN",
+    "ai_reason": "Amount exceeds RM 500",
+    "timestamp": "2026-05-16T14:09:42.961Z"
+  },
+  {
+    "id": "1778940599762",
+    "userId": "user1",
+    "recipient_account": "1111",
+    "amount": 50,
+    "remark": "scam",
+    "status": "REJECTED",
+    "decision": "WARN",
+    "ai_reason": "Remark contains suspicious keyword: scam",
+    "timestamp": "2026-05-16T14:09:59.762Z"
+  },
+  {
+    "id": "1778940637690",
+    "userId": "user1",
+    "recipient_account": "1111",
+    "amount": 50,
+    "remark": "peanut",
+    "status": "REJECTED",
+    "decision": "WARN",
+    "ai_reason": "Too many transfers to the same account in a short period",
+    "timestamp": "2026-05-16T14:10:37.690Z"
+  },
+  {
+    "id": "1778948204861",
+    "userId": "user1",
+    "recipient_account": "1111",
+    "amount": 502,
+    "remark": "peanut",
+    "status": "ESCALATED",
+    "decision": "WARN",
+    "ai_reason": "Amount exceeds RM 500",
+    "timestamp": "2026-05-16T16:16:44.861Z"
+  },
+  {
+    "id": "1778948929661",
+    "userId": "user1",
+    "recipient_account": "1111",
+    "amount": 5000,
+    "remark": "peanut",
+    "status": "ESCALATED",
+    "decision": "WARN",
+    "ai_reason": "Amount exceeds RM 500",
+    "timestamp": "2026-05-16T16:28:49.661Z"
+  },
+  {
+    "id": "1778949119217",
+    "userId": "user1",
+    "recipient_account": "1111",
+    "amount": 5000,
+    "remark": "peanut",
+    "status": "PENDING",
+    "decision": "WARN",
+    "ai_reason": "Amount exceeds RM 500",
+    "timestamp": "2026-05-16T16:31:59.217Z"
   }
 ]
