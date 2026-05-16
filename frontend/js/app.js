@@ -55,7 +55,9 @@ async function handleLogin(e) {
         const data = await res.json();
         currentBalance = data.balance;
         updateBalanceDisplay();
-    } catch (err) { console.error(err); }
+    } catch (err) {
+        console.error(err);
+    }
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('bankingSection').style.display = 'block';
 }
@@ -81,7 +83,7 @@ function logout() {
 
 function updateBalanceDisplay() {
     const el = document.getElementById('balance');
-    if (el) el.textContent = `RM ${currentBalance.toFixed(2)}`;
+    if (el) el.textContent = 'RM ' + currentBalance.toFixed(2);
 }
 
 async function showLoadingModal() {
@@ -91,64 +93,135 @@ async function showLoadingModal() {
     for (let i = 0; i < steps.length; i++) {
         await sleep(800);
         document.getElementById(steps[i]).classList.add('active');
-        document.getElementById('progressBar').style.width = i === 0 ? '25%' : i === 1 ? '60%' : '100%';
+        let width = '25%';
+        if (i === 1) width = '60%';
+        if (i === 2) width = '100%';
+        document.getElementById('progressBar').style.width = width;
     }
 }
+
 function hideLoadingModal() {
     document.getElementById('loadingModal').style.display = 'none';
-    ['step1', 'step2', 'step3'].forEach(id => document.getElementById(id).classList.remove('active'));
+    ['step1', 'step2', 'step3'].forEach(function (id) {
+        document.getElementById(id).classList.remove('active');
+    });
     document.getElementById('progressBar').style.width = '0%';
 }
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function sleep(ms) {
+    return new Promise(function (r) { setTimeout(r, ms); });
+}
 
 async function handleTransfer(e) {
     e.preventDefault();
-    const recipient = document.getElementById('recipientAccount').value;
+
+    const recipient_account = document.getElementById('recipientAccount').value;
     const amount = parseFloat(document.getElementById('amount').value);
     const remark = document.getElementById('remark').value;
-    if (!recipient || !amount || amount <= 0 || !remark.trim()) return alert('Please fill all fields');
-    if (amount > currentBalance) return alert(`Insufficient balance (RM ${currentBalance.toFixed(2)})`);
+
+    if (!recipient_account) {
+        alert('Please enter recipient account number');
+        return;
+    }
+    if (!amount || amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+    }
+    if (!remark || remark.trim() === '') {
+        alert('Remark is required. Please describe the purpose of this transfer');
+        return;
+    }
+    if (amount > currentBalance) {
+        alert('Insufficient balance. Current balance: RM ' + currentBalance.toFixed(2));
+        return;
+    }
 
     await showLoadingModal();
 
+    const transferBtn = document.getElementById('transferBtn');
+    transferBtn.disabled = true;
+    transferBtn.textContent = 'Processing...';
+
     try {
-        const res = await fetch('/api/transactions/initiate', {
+        const response = await fetch('/api/transactions/initiate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: 'user1', recipient_account: recipient, amount, remark: remark.trim() })
+            body: JSON.stringify({
+                userId: 'user1',
+                recipient_account: recipient_account,
+                amount: amount,
+                remark: remark.trim()
+            })
         });
-        const data = await res.json();
+
+        const result = await response.json();
         hideLoadingModal();
 
-        if (data.success && data.decision === 'ALLOW') {
-            currentBalance = data.newBalance;
-            updateBalanceDisplay();
-            addToHistory(recipient, amount, remark, 'COMPLETED');
-            clearForm();
+        if (result.success && result.decision === 'ALLOW') {
+            if (result.newBalance !== undefined) {
+                currentBalance = result.newBalance;
+                updateBalanceDisplay();
+            }
             showResultModal('Transaction Completed', 'Your transfer has been processed successfully.', 'success');
-        }
-        else if (data.decision === 'BLOCK') {
-            currentTransactionId = data.transactionId;
-            showBlockedModal(data.reason, recipient, amount);
-            addToHistory(recipient, amount, remark, 'BLOCKED');
+            addToHistory(recipient_account, amount, remark, 'COMPLETED');
             clearForm();
         }
-        else if (data.decision === 'WARN') {
-            currentTransactionId = data.transactionId;
-            trustedWindow = window.open(`trusted.html?txnId=${data.transactionId}`, '_blank');
-            showWaitingModal(data.transactionId);
-            startPolling(data.transactionId);
+        else if (result.decision === 'BLOCK') {
+            currentTransactionId = result.transactionId;
+            showBlockedModal(result.reason, recipient_account, amount);
+            addToHistory(recipient_account, amount, remark, 'BLOCKED');
+            clearForm();
         }
-        else if (data.error) alert(data.error);
-    } catch (err) { console.error(err); alert('Connection error'); }
-    finally { document.getElementById('transferBtn').disabled = false; }
+        else if (result.decision === 'WARN') {
+            currentTransactionId = result.transactionId;
+            trustedWindow = window.open('trusted.html?txnId=' + result.transactionId, '_blank');
+            showWaitingModal(result.transactionId, result.reason);
+            startPolling(result.transactionId);
+        }
+        else if (result.error) {
+            alert(result.error);
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Connection error. Please check if the server is running.');
+    } finally {
+        transferBtn.disabled = false;
+        transferBtn.textContent = 'check and transfer';
+    }
+}
+
+function showWaitingModal(txnId, warningReason) {
+    const modal = document.getElementById('waitingModal');
+    const timerSpan = document.getElementById('timerText');
+    const waitingMessage = document.getElementById('waitingMessage');
+
+    if (warningReason) {
+        waitingMessage.innerHTML = 'TRANSACTION HELD\n\nReason: ' + warningReason + '\n\nWe have notified your trusted person (Siti Ahmad).\nPlease wait for their approval or rejection.';
+    } else {
+        waitingMessage.innerHTML = 'We have notified your trusted person. Please wait for their decision.';
+    }
+
+    modal.style.display = 'flex';
+    let seconds = 20;
+    timerSpan.innerText = seconds + ' seconds remaining';
+
+    if (waitingModalTimeout) clearInterval(waitingModalTimeout);
+    waitingModalTimeout = setInterval(function () {
+        seconds = seconds - 1;
+        timerSpan.innerText = seconds + ' seconds remaining';
+        if (seconds <= 0) {
+            clearInterval(waitingModalTimeout);
+            modal.style.display = 'none';
+            window.open('call.html?txnId=' + txnId, '_blank');
+        }
+    }, 1000);
 }
 
 function startPolling(txnId) {
     if (statusPollingInterval) clearInterval(statusPollingInterval);
-    statusPollingInterval = setInterval(async () => {
+    statusPollingInterval = setInterval(async function () {
         try {
-            const res = await fetch(`/api/transactions/status/${txnId}`);
+            const res = await fetch('/api/transactions/status/' + txnId);
             const data = await res.json();
             const status = data.status;
             if (status === 'APPROVED' || status === 'APPROVED_BY_NSRC') {
@@ -159,8 +232,8 @@ function startPolling(txnId) {
                 const balanceData = await balanceRes.json();
                 currentBalance = balanceData.balance;
                 updateBalanceDisplay();
-                showResultModal('Transaction Approved', 'Your trusted person (or NSRC) has approved the transaction. The transfer is complete.', 'success');
-                const details = await fetch(`/api/transactions/details/${txnId}`);
+                showResultModal('Transaction Approved', 'Your trusted person has approved the transaction. The transfer is complete.', 'success');
+                const details = await fetch('/api/transactions/details/' + txnId);
                 const tx = await details.json();
                 addToHistory(tx.recipient_account, tx.amount, tx.remark, 'APPROVED');
                 clearForm();
@@ -169,7 +242,7 @@ function startPolling(txnId) {
                 clearInterval(statusPollingInterval);
                 document.getElementById('waitingModal').style.display = 'none';
                 if (waitingModalTimeout) clearInterval(waitingModalTimeout);
-                const details = await fetch(`/api/transactions/details/${txnId}`);
+                const details = await fetch('/api/transactions/details/' + txnId);
                 const tx = await details.json();
                 showRejectionModal('Trusted Person', tx.ai_reason, tx.recipient_account, tx.amount);
                 addToHistory(tx.recipient_account, tx.amount, tx.remark, 'REJECTED');
@@ -179,52 +252,29 @@ function startPolling(txnId) {
                 clearInterval(statusPollingInterval);
                 document.getElementById('waitingModal').style.display = 'none';
                 if (waitingModalTimeout) clearInterval(waitingModalTimeout);
-                const details = await fetch(`/api/transactions/details/${txnId}`);
+                const details = await fetch('/api/transactions/details/' + txnId);
                 const tx = await details.json();
-                showRejectionModal('National Scam Response Centre (997)', tx.ai_reason, tx.recipient_account, tx.amount);
+                showRejectionModal('National Scam Response Centre', tx.ai_reason, tx.recipient_account, tx.amount);
                 addToHistory(tx.recipient_account, tx.amount, tx.remark, 'REJECTED');
                 clearForm();
                 currentTransactionId = null;
-            } else if (status === 'ESCALATED') {
-                // Handled by timeout -> call.html
             }
-        } catch (err) { console.error('Polling error', err); }
+        } catch (err) {
+            console.error('Polling error', err);
+        }
     }, 2000);
 }
 
 function showRejectionModal(rejectedBy, reason, recipient, amount) {
     const modal = document.getElementById('rejectionModal');
     const messageEl = document.getElementById('rejectionMessage');
-    messageEl.innerHTML = `
-        <strong>Rejected by:</strong> ${rejectedBy}<br>
-        <strong>Recipient:</strong> ${recipient}<br>
-        <strong>Amount:</strong> RM ${amount}<br>
-        <strong>Reason:</strong> ${reason}<br><br>
-        This transaction has been blocked and will not be processed.
-    `;
+    messageEl.innerHTML = 'Rejected by: ' + rejectedBy + '\nRecipient: ' + recipient + '\nAmount: RM ' + amount + '\nReason: ' + reason + '\n\nThis transaction has been blocked and will not be processed.';
     modal.style.display = 'flex';
-}
-
-function showWaitingModal(txnId) {
-    const modal = document.getElementById('waitingModal');
-    const timerSpan = document.getElementById('timerText');
-    modal.style.display = 'flex';
-    let seconds = 20; // 20 seconds timeout
-    timerSpan.innerText = `${seconds} seconds remaining`;
-    waitingModalTimeout = setInterval(() => {
-        seconds--;
-        timerSpan.innerText = `${seconds} seconds remaining`;
-        if (seconds <= 0) {
-            clearInterval(waitingModalTimeout);
-            modal.style.display = 'none';
-            window.open(`call.html?txnId=${txnId}`, '_blank');
-        }
-    }, 1000);
 }
 
 function showBlockedModal(reason, recipient, amount) {
     const modal = document.getElementById('blockedModal');
-    const msg = `Transaction to ${recipient} of RM ${amount} has been BLOCKED.\nReason: ${reason}\nYour trusted person has also been notified.`;
+    const msg = 'Transaction to ' + recipient + ' of RM ' + amount + ' has been BLOCKED.\nReason: ' + reason + '\nYour trusted person has also been notified.';
     document.getElementById('blockedMessage').innerText = msg;
     modal.style.display = 'flex';
 }
@@ -236,20 +286,36 @@ function showResultModal(title, message, type) {
     titleEl.innerText = title;
     msgEl.innerText = message;
     modal.style.display = 'flex';
-    setTimeout(() => { modal.style.display = 'none'; }, 5000);
+    setTimeout(function () {
+        modal.style.display = 'none';
+    }, 5000);
 }
 
 function addToHistory(account, amount, remark, status) {
-    const item = { date: new Date().toLocaleString(), account, amount, remark, status };
+    const item = {
+        date: new Date().toLocaleString(),
+        account: account,
+        amount: amount,
+        remark: remark,
+        status: status
+    };
     transactionHistory.unshift(item);
     const historyList = document.getElementById('transactionHistory');
-    if (transactionHistory.length === 0) historyList.innerHTML = '<li class="empty-history">no transactions yet</li>';
-    else {
-        historyList.innerHTML = transactionHistory.slice(0, 8).map(tx => `
-            <li><strong>${tx.date}</strong><br>to: ${tx.account} | amount: RM ${tx.amount}<br>remark: ${tx.remark} | <span style="color:${tx.status === 'COMPLETED' ? '#8F9E6E' : tx.status === 'APPROVED' ? '#B9B07E' : '#C17B4A'}">${tx.status.toLowerCase()}</span></li>
-        `).join('');
+    if (transactionHistory.length === 0) {
+        historyList.innerHTML = '<li class="empty-history">no transactions yet</li>';
+    } else {
+        var html = '';
+        for (var i = 0; i < Math.min(transactionHistory.length, 8); i++) {
+            var tx = transactionHistory[i];
+            var color = '#8F9E6E';
+            if (tx.status === 'APPROVED') color = '#B9B07E';
+            if (tx.status === 'REJECTED' || tx.status === 'BLOCKED') color = '#C17B4A';
+            html += '<li><strong>' + tx.date + '</strong><br>to: ' + tx.account + ' | amount: RM ' + tx.amount + '<br>remark: ' + (tx.remark || '-') + ' | <span style="color:' + color + '">' + tx.status.toLowerCase() + '</span></li>';
+        }
+        historyList.innerHTML = html;
     }
 }
+
 function clearForm() {
     document.getElementById('recipientAccount').value = '';
     document.getElementById('amount').value = '';

@@ -94,7 +94,6 @@ header h1 {
     margin: 2rem auto;
 }
 
-/* Logo centering */
 .login-icon {
     text-align: left;
     margin-bottom: 1.5rem;
@@ -104,7 +103,7 @@ header h1 {
     max-width: 600px;
     height: auto;
     display: block;
-    margin-left: -7rem;
+    margin-left: -7.5rem;
 }
 
 .dashboard-header {
