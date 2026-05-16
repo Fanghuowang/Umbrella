@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>997 · National Scam Response Centre</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: -apple-system, 'Inter', sans-serif;
+        }
+
+        .phone {
+            width: 100%;
+            max-width: 380px;
+            background: #1C1C1E;
+            border-radius: 44px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            color: white;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .status {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #4CAF50;
+            margin-bottom: 2rem;
+        }
+
+        .avatar {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .pulse {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(76, 175, 80, 0.3);
+            border-radius: 50%;
+            animation: pulse 1.2s infinite;
+        }
+
+        .avatar span {
+            position: relative;
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: #2C2C2E;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            z-index: 1;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: scale(1.4);
+                opacity: 0;
+            }
+        }
+
+        .number {
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            margin-bottom: 0.25rem;
+        }
+
+        .name {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-bottom: 2rem;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .accept,
+        .decline {
+            border: none;
+            padding: 0.8rem 1.8rem;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            width: auto;
+        }
+
+        .accept {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .decline {
+            background: #AA7A6E;
+            color: white;
+        }
+
+        .nsrc-buttons {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .nsrc-approve {
+            background: #B9B07E;
+            color: #2B2A27;
+        }
+
+        .nsrc-reject {
+            background: #D4BBA4;
+            color: #2B2A27;
+        }
+
+        .call-ended {
+            color: #aaa;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .info-message {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #8F9E6E;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="phone" id="callScreen">
+        <div class="status" id="callStatus">incoming call</div>
+        <div class="avatar">
+            <div class="pulse"></div>
+            <span>📞</span>
+        </div>
+        <div class="number">997</div>
+        <div class="name">National Scam Response Centre</div>
+        <div class="buttons" id="callButtons">
+            <button class="accept" id="acceptCall">accept</button>
+            <button class="decline" id="declineCall">decline</button>
+        </div>
+        <div id="nsrcDecision" class="hidden">
+            <div class="nsrc-buttons">
+                <button id="nsrcApprove" class="accept nsrc-approve">Approve Transaction</button>
+                <button id="nsrcReject" class="decline nsrc-reject">Block Transaction</button>
+            </div>
+        </div>
+        <div id="callEnded" class="call-ended hidden"></div>
+    </div>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const txnId = urlParams.get('txnId');
+        let callActive = true;
+
+        document.getElementById('acceptCall').addEventListener('click', () => {
+            document.getElementById('callStatus').innerText = 'connected';
+            document.getElementById('callButtons').classList.add('hidden');
+            document.getElementById('nsrcDecision').classList.remove('hidden');
+            callActive = false;
+        });
+        document.getElementById('declineCall').addEventListener('click', () => {
+            document.getElementById('callEnded').classList.remove('hidden');
+            document.getElementById('callEnded').innerText = 'Call ended. The transaction will remain pending. Please contact your bank.';
+            document.getElementById('callButtons').classList.add('hidden');
+            callActive = false;
+            setTimeout(() => window.close(), 3000);
+        });
+
+        async function nsrcDecision(decision) {
+            try {
+                const res = await fetch(`/api/transactions/nsrc/${txnId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ decision })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('callStatus').innerText = 'call completed';
+                    document.getElementById('nsrcDecision').classList.add('hidden');
+                    document.getElementById('callEnded').classList.remove('hidden');
+                    if (decision === 'approve') {
+                        document.getElementById('callEnded').innerHTML = '✅ Transaction approved by NSRC. The transfer will be processed. This window will close.';
+                    } else {
+                        document.getElementById('callEnded').innerHTML = '🛡️ Transaction blocked by NSRC. No money transferred. This window will close.';
+                    }
+                    setTimeout(() => window.close(), 3000);
+                } else {
+                    alert('Error processing NSRC decision: ' + (data.error || 'Unknown error'));
+                }
+            } catch (err) {
+                alert('Network error: ' + err.message);
+            }
+        }
+
+        document.getElementById('nsrcApprove').addEventListener('click', () => nsrcDecision('approve'));
+        document.getElementById('nsrcReject').addEventListener('click', () => nsrcDecision('reject'));
+    </script>
+</body>
+
+</html>

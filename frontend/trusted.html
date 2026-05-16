@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScamShield AI · Trusted Person Approval</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #F5EDE3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .card {
+            background: #FFFBF7;
+            border-radius: 48px;
+            padding: 2rem;
+            max-width: 550px;
+            width: 100%;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.08);
+            border: 1px solid #EADBCE;
+        }
+
+        h2 {
+            margin-bottom: 1rem;
+            color: #3E2E24;
+            font-weight: 500;
+        }
+
+        .detail {
+            background: #F7EFE8;
+            padding: 1.2rem;
+            border-radius: 28px;
+            margin: 1rem 0;
+        }
+
+        .detail p {
+            margin: 0.7rem 0;
+            color: #4B3621;
+            font-size: 0.95rem;
+            word-break: break-word;
+        }
+
+        .risk-badge {
+            background: #C17B4A;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 40px;
+            display: inline-block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        button {
+            flex: 1;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-approve {
+            background: #B9B07E;
+            color: #2B2A27;
+        }
+
+        .btn-reject {
+            background: #D4BBA4;
+            color: #2B2A27;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+
+        .info {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #8F9E6E;
+        }
+
+        .error {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #C17B4A;
+        }
+
+        hr {
+            margin: 1rem 0;
+            border: none;
+            border-top: 1px solid #E1CFBF;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h2>Trusted Person Approval Required</h2>
+        <div id="txnDetails" class="detail">Loading transaction details...</div>
+        <div class="btn-group">
+            <button id="approveBtn" class="btn-approve">Approve Transaction</button>
+            <button id="rejectBtn" class="btn-reject">Reject Transaction</button>
+        </div>
+        <div id="message" class="info"></div>
+    </div>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const txnId = urlParams.get('txnId');
+        let transaction = null;
+
+        async function loadTransaction() {
+            if (!txnId) {
+                document.getElementById('txnDetails').innerHTML = 'Invalid transaction ID.';
+                document.querySelector('.btn-group').style.display = 'none';
+                return;
+            }
+            try {
+                const statusRes = await fetch(`/api/transactions/status/${txnId}`);
+                const statusData = await statusRes.json();
+                if (statusData.status !== 'PENDING') {
+                    document.getElementById('txnDetails').innerHTML = `This transaction has already been ${statusData.status.toLowerCase()}. No action needed.`;
+                    document.querySelector('.btn-group').style.display = 'none';
+                    return;
+                }
+                const detailsRes = await fetch(`/api/transactions/details/${txnId}`);
+                if (!detailsRes.ok) throw new Error('Failed to fetch details');
+                const txn = await detailsRes.json();
+                transaction = txn;
+                let riskHtml = `<div class="risk-badge">⚠️ Risk Detected</div>`;
+                riskHtml += `<p><strong>Risk Reason:</strong> ${txn.ai_reason || 'Suspicious pattern detected'}</p>`;
+                if (txn.ai_reason && txn.ai_reason.toLowerCase().includes('amount')) {
+                    riskHtml += `<p>• This amount is higher than usual for this account.</p>`;
+                }
+                if (txn.ai_reason && txn.ai_reason.toLowerCase().includes('keyword')) {
+                    riskHtml += `<p>• The remark contains words commonly used in scams.</p>`;
+                }
+                if (txn.ai_reason && txn.ai_reason.toLowerCase().includes('account')) {
+                    riskHtml += `<p>• The recipient account has been flagged in scam reports.</p>`;
+                }
+                document.getElementById('txnDetails').innerHTML = `
+                    <p><strong>Recipient Account:</strong> ${txn.recipient_account}</p>
+                    <p><strong>Amount:</strong> RM ${txn.amount}</p>
+                    <p><strong>Remark:</strong> ${txn.remark || '—'}</p>
+                    <hr>
+                    ${riskHtml}
+                `;
+            } catch (err) {
+                console.error(err);
+                document.getElementById('txnDetails').innerHTML = 'Error loading transaction details. Please refresh.';
+                document.querySelector('.btn-group').style.display = 'none';
+            }
+        }
+
+        async function approve() {
+            try {
+                const res = await fetch(`/api/approval/approve/${txnId}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('message').innerHTML = '✅ Transaction approved! The transfer will be completed. This window will close in 3 seconds.';
+                    document.querySelector('.btn-group').style.display = 'none';
+                    setTimeout(() => window.close(), 3000);
+                } else {
+                    document.getElementById('message').className = 'error';
+                    document.getElementById('message').innerHTML = data.error || 'Approval failed';
+                }
+            } catch (err) {
+                document.getElementById('message').className = 'error';
+                document.getElementById('message').innerHTML = 'Network error';
+            }
+        }
+
+        async function reject() {
+            try {
+                const res = await fetch(`/api/approval/reject/${txnId}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('message').innerHTML = '❌ Transaction rejected. No money will be transferred.<br><br><strong>Please contact your elderly parent to inform them about this suspicious transaction attempt.</strong>';
+                    document.querySelector('.btn-group').style.display = 'none';
+                    setTimeout(() => window.close(), 4000);
+                } else {
+                    document.getElementById('message').className = 'error';
+                    document.getElementById('message').innerHTML = data.error || 'Rejection failed';
+                }
+            } catch (err) {
+                document.getElementById('message').className = 'error';
+                document.getElementById('message').innerHTML = 'Network error';
+            }
+        }
+
+        document.getElementById('approveBtn').addEventListener('click', approve);
+        document.getElementById('rejectBtn').addEventListener('click', reject);
+        loadTransaction();
+    </script>
+</body>
+
+</html>
