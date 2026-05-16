@@ -2,7 +2,7 @@
   {
     "id": "user1",
     "name": "Ahmad Abdullah",
-    "balance": 9950,
+    "balance": 9850,
     "trusted_person": {
       "name": "Siti Ahmad",
       "phone": "0123456789"

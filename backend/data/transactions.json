@@ -506,5 +506,60 @@
     "decision": "WARN",
     "ai_reason": "Amount exceeds RM 500",
     "timestamp": "2026-05-16T06:39:22.290Z"
+  },
+  {
+    "id": "1778921559340",
+    "userId": "user1",
+    "recipient_account": "512802774281",
+    "amount": 50,
+    "remark": "peanut",
+    "status": "BLOCKED",
+    "decision": "BLOCK",
+    "ai_reason": "Recipient account is flagged as suspicious",
+    "timestamp": "2026-05-16T08:52:39.340Z"
+  },
+  {
+    "id": "1778921577284",
+    "userId": "user1",
+    "recipient_account": "1111",
+    "amount": 5000,
+    "remark": "peanut",
+    "status": "REJECTED",
+    "decision": "WARN",
+    "ai_reason": "Amount exceeds RM 500",
+    "timestamp": "2026-05-16T08:52:57.284Z"
+  },
+  {
+    "id": "1778921641827",
+    "userId": "user1",
+    "recipient_account": "1111",
+    "amount": 50,
+    "remark": "peanut",
+    "status": "COMPLETED",
+    "decision": "ALLOW",
+    "ai_reason": "Transaction appears safe",
+    "timestamp": "2026-05-16T08:54:01.827Z"
+  },
+  {
+    "id": "1778921655971",
+    "userId": "user1",
+    "recipient_account": "1111",
+    "amount": 50,
+    "remark": "peanut",
+    "status": "COMPLETED",
+    "decision": "ALLOW",
+    "ai_reason": "Transaction appears safe",
+    "timestamp": "2026-05-16T08:54:15.971Z"
+  },
+  {
+    "id": "1778921666300",
+    "userId": "user1",
+    "recipient_account": "1111",
+    "amount": 50,
+    "remark": "peanut",
+    "status": "REJECTED_BY_NSRC",
+    "decision": "WARN",
+    "ai_reason": "Too many transfers to the same account in a short period",
+    "timestamp": "2026-05-16T08:54:26.300Z"
   }
 ]
