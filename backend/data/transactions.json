@@ -671,5 +671,27 @@
     "decision": "WARN",
     "ai_reason": "Amount exceeds RM 500",
     "timestamp": "2026-05-16T16:31:59.217Z"
+  },
+  {
+    "id": "1778980587237",
+    "userId": "user1",
+    "recipient_account": "1111",
+    "amount": 502,
+    "remark": "peanut",
+    "status": "ESCALATED",
+    "decision": "WARN",
+    "ai_reason": "Amount exceeds RM 500",
+    "timestamp": "2026-05-17T01:16:27.237Z"
+  },
+  {
+    "id": "1778983328584",
+    "userId": "user1",
+    "recipient_account": "1111",
+    "amount": 502,
+    "remark": "peanut",
+    "status": "ESCALATED",
+    "decision": "WARN",
+    "ai_reason": "Amount exceeds RM 500",
+    "timestamp": "2026-05-17T02:02:08.584Z"
   }
 ]

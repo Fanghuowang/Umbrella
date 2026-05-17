@@ -134,10 +134,10 @@ router.post('/initiate', async (req, res) => {
                 if (tx && tx.status === 'PENDING') {
                     tx.status = 'ESCALATED';
                     writeTransactions(allTx);
-                    console.log(`Transaction ${transactionId} escalated to 997 after 20 seconds`);
+                    console.log(`Transaction ${transactionId} escalated to 997 after 10 seconds`);
                 }
                 delete pendingTimeouts[transactionId];
-            }, 20000);
+            }, 10000);
             pendingTimeouts[transactionId] = timeout;
 
             return res.json({

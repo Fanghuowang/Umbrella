@@ -211,9 +211,9 @@
                     document.getElementById('nsrcDecision').classList.add('hidden');
                     document.getElementById('callEnded').classList.remove('hidden');
                     if (decision === 'approve') {
-                        document.getElementById('callEnded').innerHTML = '✅ Transaction approved by NSRC. The transfer will be processed. This window will close.';
+                        document.getElementById('callEnded').innerHTML = 'Transaction approved by NSRC. The transfer will be processed. This window will close.';
                     } else {
-                        document.getElementById('callEnded').innerHTML = '🛡️ Transaction blocked by NSRC. No money transferred. This window will close.';
+                        document.getElementById('callEnded').innerHTML = 'Transaction blocked by NSRC. No money transferred. This window will close.';
                     }
                     setTimeout(() => window.close(), 3000);
                 } else {

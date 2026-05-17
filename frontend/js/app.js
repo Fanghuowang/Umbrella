@@ -202,7 +202,7 @@ function showWaitingModal(txnId, warningReason) {
     }
 
     modal.style.display = 'flex';
-    let seconds = 20;
+    let seconds = 10;
     timerSpan.innerText = seconds + ' seconds remaining';
 
     if (waitingModalTimeout) clearInterval(waitingModalTimeout);

@@ -20,7 +20,6 @@ body {
     background-attachment: fixed;
 }
 
-/* Soft overlay for better text readability */
 body::before {
     content: '';
     position: fixed;
@@ -33,7 +32,6 @@ body::before {
     z-index: -1;
 }
 
-/* Background texture gradient (optional, can be removed if not needed) */
 .gradient-bg {
     position: fixed;
     top: 0;
@@ -168,7 +166,6 @@ header h1 {
     color: #5C4030;
 }
 
-/* Form elements */
 .form-group {
     margin-bottom: 1.3rem;
 }
@@ -214,7 +211,6 @@ small {
     color: #B29178;
 }
 
-/* Buttons */
 button {
     padding: 0.9rem 1.5rem;
     border: none;
@@ -267,7 +263,6 @@ button:active {
     transform: translateY(0);
 }
 
-/* Transaction history */
 .history-card ul {
     list-style: none;
     max-height: 240px;
@@ -286,7 +281,6 @@ button:active {
     padding: 1rem;
 }
 
-/* Modals */
 .modal {
     position: fixed;
     top: 0;
@@ -326,7 +320,6 @@ button:active {
     line-height: 1.5;
 }
 
-/* Loading modal */
 .loading-step {
     margin: 1rem 0;
     font-size: 0.85rem;
@@ -374,7 +367,6 @@ button:active {
     transition: width 0.3s ease;
 }
 
-/* Warning modal */
 .warning-card {
     border-top: 4px solid #C17B4A;
 }
@@ -396,7 +388,6 @@ button:active {
     color: #4B3621;
 }
 
-/* Success modal */
 .success-card {
     border-top: 4px solid #8F9E6E;
 }
@@ -407,7 +398,6 @@ button:active {
     color: #8F9E6E;
 }
 
-/* Block modal */
 .block-card {
     border-top: 4px solid #C17B4A;
 }
@@ -417,7 +407,6 @@ button:active {
     margin-bottom: 0.5rem;
 }
 
-/* Call modal - iPhone style */
 .call-card {
     background: #2C241E;
     color: #F5EDE3;
@@ -516,7 +505,6 @@ button:active {
     margin-top: 1.2rem;
 }
 
-/* Responsive */
 @media (max-width: 560px) {
     body {
         padding: 1rem;
@@ -561,7 +549,6 @@ button:active {
     background: #C6A88C;
 }
 
-/* Rejection Modal */
 .rejection-card .rejection-icon {
     font-size: 2.5rem;
     margin-bottom: 0.5rem;
