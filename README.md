@@ -78,7 +78,7 @@ Existing bank fraud detection is **reactive** (after money is sent) and lacks **
 5. **Open your browser** to `http://localhost:3000`
 
 > **Note:** Any username/password works for the demo. The backend uses a fixed user (`user1`) with an initial balance of RM 10,000.
-
+# don't forget to enable pop up window in the main tab
 ---
 
 ##  Demo Scenarios
